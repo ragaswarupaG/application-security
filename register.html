@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <style>
+      form {
+        border: 3px solid #f1f1f1;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #04aa6d;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        opacity: 0.8;
+      }
+      .container {
+        padding: 5px;
+      }
+      span.psw {
+        float: right;
+        padding: 16px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <form id="registerForm">
+      <div class="container">
+        <label for="uname"><b>Name</b></label>
+        <input
+          id="uname"
+          type="text"
+          placeholder="Enter name"
+          name="uname"
+          required
+        />
+
+        <label for="psw"><b>Password</b></label>
+        <span class="toggle-password" onclick="togglePasswordVisibility()">
+          <i class="fas fa-eye"></i>
+        </span>
+
+        <input
+          id="psw"
+          type="password"
+          placeholder="Enter password"
+          name="psw"
+          required
+        />
+
+        <label for="email"><b>Email</b></label>
+        <input
+          id="email"
+          type="email"
+          placeholder="Enter email"
+          name="email"
+          required
+        />
+
+        <label for="role"><b>Role</b></label>
+        <select name="role" id="role">
+          <option value="admin">Admin</option>
+          <option value="public">Public</option>
+          <option value="teacher">Teacher</option>
+          <option value="student">Student</option>
+        </select>
+
+        <button type="submit">Register</button>
+      </div>
+
+      <div class="container" style="background-color: #f1f1f1">
+        <span class="psw"><a href="login.html">Login</a></span>
+      </div>
+    </form>
+  </body>
+  <script>
+    function processForm(event) {
+      event.preventDefault();
+      const uname = document.getElementById("uname");
+      const psw = document.getElementById("psw");
+      const email = document.getElementById("email");
+      const role = document.getElementById("role").value;
+      console.log("got the details");
+      var data = JSON.stringify({
+        username: uname.value,
+        password: psw.value,
+        email: email.value,
+      });
+      var xhr = new XMLHttpRequest();
+      xhr.addEventListener("readystatechange", function () {
+       
+
+        if (this.readyState === 4) {
+          console.log(this.responseText);
+          var response = JSON.parse(this.responseText);
+          
+          alert(response.message);
+          console.log("Storing userId:", response.data.userId);
+          console.log("Storing email:", response.data.email); // Accessing userId correctly from parsed JSON
+          alert(response.message);
+          localStorage.setItem("userId", response.data.userId); 
+          localStorage.setItem("email", response.data.email);
+
+          if (response.message === "A link to activate your account has been emailed to the address provided.") {
+            window.location.href = "otp.html";
+          }
+        }
+      });
+      xhr.open("POST", "http://localhost:5000/register-" + role);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(data);
+    }
+    const form = document.getElementById("registerForm");
+    form.addEventListener("submit", processForm);
+
+    function togglePasswordVisibility() {
+      var passwordField = document.getElementById("psw");
+
+      if (passwordField.type === "password") {
+        passwordField.type = "text";
+      } else {
+        passwordField.type = "password";
+      }
+    }
+
+    document
+      .getElementById(togglePassword)
+      .addEventListener("click", togglePasswordVisibility);
+  </script>
+</html>

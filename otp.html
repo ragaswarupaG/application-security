@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter OTP</title>
+
+    <style>
+        form{
+            border:3px solid #f1f1f1
+        }
+        input,select{
+            width:100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+
+        }
+        button{
+            background-color: #04aa6d;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover{
+            opacity: 0.8;
+        }
+        .container{
+            padding: 5px;
+        }
+        span.psw{
+            float: right;
+            padding: 16px;
+        }
+
+        #resendOTP{
+            width: 100px;      /* Set the width to 100px */
+    height: 30px;      /* Set the height to 30px */
+    padding: 5px 10px; /* Adjust the padding for inner spacing */
+    font-size: 12px;   /* Set a smaller font size */
+    background-color: #000000; /* Optional: Set a background color */
+    color: white;      /* Optional: Set the text color */
+
+        }
+
+        
+
+    </style>
+</head>
+<body>
+    <form id="otpForm">
+
+
+        <div class="container">
+            <label for="otpInput"><b>Enter the OTP which was sent to your email.</b></label>
+            <input id="otpInput" type="text" placeholder="Enter OTP" name="otpInput" required>
+
+
+
+            <button type="submit" >Submit</button>
+
+            
+
+        </div>
+
+        <div class="container" style="background-color: #f1f1f1;">
+            <span class="psw"><a href="register.html">Sign up</a></span>
+        </div>
+
+
+
+
+    
+
+       
+
+
+       
+    </form>
+    <button id="resendOTP" type="buttonotp">Resend OTP</button>
+    
+    
+
+    
+</body>
+
+<script>
+
+   
+   function processForm(event){
+        event.preventDefault();
+        const inputOTP = document.getElementById("otpInput").value;
+        console.log(inputOTP)
+
+        const userId = localStorage.getItem('userId');
+     
+            
+        if (!userId ) {
+            alert("User ID not found. Please sign up or log in.");
+            return;
+        }
+    
+        var data = JSON.stringify({
+            "userId": userId,
+            
+            "otp":otpInput.value,
+        });
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener("readystatechange", function(){
+            if (this.readyState === 4){
+             
+                console.log(this.responseText);
+                var response = JSON.parse(this.responseText)
+                alert(response.message)
+
+                if(response.message == "User email verified succesffully."){
+                    console.log("verfied now go back to login page")
+                    window.location.href = "login.html"
+                }
+
+            }
+        });
+        xhr.open("POST", "http://localhost:5000/verifyOTP" );
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(data);
+    }
+    const form = document.getElementById("otpForm");
+    form.addEventListener("submit", processForm);
+
+
+
+
+
+
+
+function processButton(event){
+    console.log("in here")
+        event.preventDefault();
+       
+        
+
+        const userId = localStorage.getItem('userId'); 
+        const email = localStorage.getItem('email'); 
+            
+        if (!userId || !email) {
+            alert("User ID not found. Please sign up or log in.");
+            return;
+        }
+    
+        var data = JSON.stringify({
+            "userId": userId,
+            "email": email,
+            "otp":otpInput.value,
+        });
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener("readystatechange", function(){
+            if (this.readyState === 4){
+             
+                console.log(this.responseText);
+                var response = JSON.parse(this.responseText)
+                alert(response.message)
+
+                
+
+            }
+        });
+        xhr.open("POST", "http://localhost:5000/resendOTP" );
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(data);
+    }
+    
+
+    const resendButton = document.getElementById("resendOTP");
+            resendButton.addEventListener("click", processButton);
+
+ 
+   
+    
+
+
+
+
+
+
+</script>
+</html>

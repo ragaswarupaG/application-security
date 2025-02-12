@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>login pag</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <style>
+      form {
+        border: 3px solid #f1f1f1;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #04aa6d;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        opacity: 0.8;
+      }
+      .container {
+        padding: 5px;
+      }
+      span.psw {
+        float: right;
+        padding: 16px;
+      }
+
+      .red-button:disabled {
+        background-color: darkred;
+        cursor: not-allowed;
+      }
+
+      p {
+        color: rgb(208, 42, 42);
+        font-weight: 600;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="loginForm">
+      <div class="container">
+        <label for="uname"><b>Name</b></label>
+        <input
+          id="uname"
+          type="text"
+          placeholder="Enter name"
+          name="uname"
+          required
+        />
+
+        <label for="psw"><b>Password</b></label>
+        <span class="toggle-password" onclick="togglePasswordVisibility()">
+          <i class="fas fa-eye"></i>
+        </span>
+
+        <input
+          id="psw"
+          type="password"
+          placeholder="Enter password"
+          name="psw"
+          required
+        />
+
+        <label for="role"><b>Role</b></label>
+        <select name="role" id="role">
+          <option value="admin">Admin</option>
+          <option value="public">Public</option>
+          <option value="teacher">Teacher</option>
+          <option value="student">Student</option>
+        </select>
+
+        <div>
+          <img
+            id="captchaImage"
+            alt="CAPTCHA"
+            style="width: 150px; height: 50px"
+          />
+
+          <input
+            type="text"
+            id="captchaInput"
+            placeholder="Enter CAPTCHA"
+            required
+          />
+        </div>
+
+        <button type="submit" id="loginButton" class="red-button">Login</button>
+      </div>
+
+      <p id="attemptsLeft"></p>
+
+      <div class="container" style="background-color: #f1f1f1">
+        <span class="psw"><a href="register.html">Sign up</a></span>
+      </div>
+    </form>
+  </body>
+  <script>
+    const captchaImages = [
+      { String: "2en7g", filePath: "/captcha_images/2en7g.png" },
+      { String: "24f6w", filePath: "/captcha_images/24f6w.png" },
+      { String: "25egp", filePath: "/captcha_images/25egp.png" },
+      { String: "226md", filePath: "/captcha_images/226md.png" },
+      { String: "28348", filePath: "/captcha_images/28348.png" },
+      { String: "2cegf", filePath: "/captcha_images/2cegf.png" },
+      { String: "2cg58", filePath: "/captcha_images/2cg58.png" },
+    ];
+
+    // Get a random CAPTCHA image
+    function getRandomCaptchaImage() {
+      const randomIndex = Math.floor(Math.random() * captchaImages.length);
+      return captchaImages[randomIndex];
+    }
+
+    // Display a random CAPTCHA image
+    function displayRandomCaptcha() {
+      const captcha = getRandomCaptchaImage();
+      const imgElement = document.getElementById("captchaImage");
+      imgElement.src = captcha.filePath;
+      currentCaptcha = captcha.String;
+    }
+
+    function verifyCaptcha() {
+      const userInput = document.getElementById("captchaInput").value;
+
+      if (userInput == currentCaptcha) {
+        alert("CAPTCHA verified successfully");
+      } else {
+        alert("CAPTCHA verification failed");
+        displayRandomCaptcha();
+      }
+    }
+
+    const LOCKOUT_DURATION = 60000; // 1 minute
+
+    window.onload = () => {
+      displayRandomCaptcha();
+      checkLockoutStatus();
+    };
+
+    function processForm(event) {
+      event.preventDefault();
+      function checkLockoutStatus() {
+        const lockoutExpires = localStorage.getItem("lockoutExpires");
+        if (lockoutExpires) {
+          const remainingTime = lockoutExpires - Date.now();
+          if (remainingTime > 0) {
+            const remainingSeconds = Math.floor(remainingTime / 1000);
+            document.getElementById(
+              "attemptsLeft"
+            ).innerText = `Account locked. Try again in ${remainingSeconds} seconds.`;
+
+            document.getElementById("loginButton").disabled = true;
+
+            setTimeout(checkLockoutStatus, 1000); // Check at every second
+          } else {
+            localStorage.removeItem("lockoutExpires");
+            document.getElementById("attemptsLeft").innerText =
+              "Account unlocked. You may try logging in again.";
+
+            document.getElementById("loginButton").disabled = false;
+          }
+        }
+      }
+
+      const userInput = document.getElementById("captchaInput").value;
+      if (userInput !== currentCaptcha) {
+        alert("CAPTCHA verification failed");
+        displayRandomCaptcha();
+        return;
+      }
+
+      const uname = document.getElementById("uname");
+      const psw = document.getElementById("psw");
+      const role = document.getElementById("role").value;
+
+      var data = JSON.stringify({
+        username: uname.value,
+        password: psw.value,
+        captcha: userInput,
+      });
+      var xhr = new XMLHttpRequest();
+      xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === 4) {
+          if (this.readyState === 4) {
+            var response = JSON.parse(this.responseText);
+
+            if (this.status === 200) {
+              localStorage.setItem("token", response.token);
+
+              if (response.role == "public") {
+                window.location.href = "public.html";
+              } else if (response.role == "admin") {
+                window.location.href = "admin.html";
+              } else if (response.role == "student") {
+                window.location.href = "student.html";
+              } else if (response.role == "teacher") {
+                window.location.href = "teacher.html";
+              }
+            } else {
+              alert(response.message);
+
+         
+
+          if (response.message === 'Please verify your email before logging in.') {
+            window.location.href = "otp.html";
+          }
+
+              if (response.attemptsLeft !== undefined) {
+                document.getElementById("attemptsLeft").innerText = `
+                            After several unsuccessful login attempts, access to your account will be temporarily locked.
+
+                            Attempts left: ${response.attemptsLeft}`;
+              }
+
+              console.log(response.remainingTimeLeft);
+
+              if (response.remainingTimeLeft > 0) {
+                localStorage.setItem(
+                  "lockoutExpires",
+                  Date.now() + response.remainingTimeLeft * 1000
+                );
+                checkLockoutStatus();
+              }
+            }
+          }
+        }
+      });
+
+      xhr.open("POST", "http://localhost:5000/login-" + role);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(data);
+    }
+    const form = document.getElementById("loginForm");
+    form.addEventListener("submit", processForm);
+
+    function togglePasswordVisibility() {
+      var passwordField = document.getElementById("psw");
+
+      if (passwordField.type === "password") {
+        passwordField.type = "text";
+      } else {
+        passwordField.type = "password";
+      }
+    }
+
+    document
+      .getElementById(togglePassword)
+      .addEventListener("click", togglePasswordVisibility);
+  </script>
+</html>
